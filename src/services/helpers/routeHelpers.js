@@ -23,7 +23,7 @@ module.exports  = {
             lozinka: Joi.string().required()
         }),
         confirmedSchema: Joi.object().keys({
-            status: Joi.boolean().invalid(false).required(),
+            status: Joi.boolean().invalid(true).required()
         }),
     }
 }

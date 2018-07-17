@@ -22,7 +22,7 @@ app.use(morgan('dev'));
 app.use(bodyParser.json());
 
 // routes
-app.use('/users', users);
+app.use('/korisnici', users);
 
 
 // start server

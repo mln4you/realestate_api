@@ -19,7 +19,7 @@ router.route('/login')
 
 // Example resource user localy
 router.route('/secret')
-    .get(passportJWT, UsersController.secret);
+    .get(passportJWT, validateBody(schemas.confirmedSchema), UsersController.secret);
 
 // Register user with Google
 router.route('/oauth/google')
@@ -30,7 +30,8 @@ router.route('/oauth/facebook')
     .post(passportFacebook, UsersController.facebookOath);
 
     // Email confirm
-router.route('/podaci')
-.get(UsersController.emailConfirm);
+router.route('/potvrda')
+.post(passportJWT, UsersController.emailConfirm);
 
 module.exports = router;
+
