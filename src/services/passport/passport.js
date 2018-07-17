@@ -89,7 +89,7 @@ passport.use('facebookToken', new FacebookTokenStrategy({
 // LOCAL STRATEGY
 passport.use(new LocalStrategy({
     usernameField : 'email'
-}, async (email, password, done) => {
+}, async (email, lozinka, done) => {
     try{
             // Find the user given the email
         const user = await User.findOne({ "local.email": email });
@@ -100,7 +100,7 @@ passport.use(new LocalStrategy({
         }
 
         // Check if the passport is correct
-        const isMatch =  await user.isValidPassword(password);
+        const isMatch =  await user.isValidPassword(lozinka);
 
         // If not , handle it
         if(!isMatch){

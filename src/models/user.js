@@ -14,7 +14,7 @@ const userSchema = new Schema({
             type: String,
             lowercase: true
         },
-        password: {
+        lozinka: {
             type: String
         }
     },
@@ -35,7 +35,30 @@ const userSchema = new Schema({
             type: String,
             lowercase: true
         }
-    }
+    },
+    tip : [{ type: Schema.Types.ObjectId, ref: 'UserType' }],
+    uloga : [{ type: Schema.Types.ObjectId, ref: 'UserRole' }],
+    ime : {
+        type: String,
+    },
+    prezime : {
+        type: String,
+    },
+    verify_token : {
+        type: String,
+    },
+    status : {
+        type: Boolean,
+        required: [false, "Status je neophodan"],
+    },
+    telefon : {
+        type: Number,
+        required: [false]
+    },
+    naziv_kompanije : {
+        type: String,
+    },
+    favorite_properties : [{ type: Schema.Types.ObjectId, ref: 'Property' }]
 });
 
 
@@ -50,10 +73,10 @@ userSchema.pre('save', async function (next) {
 
         // Generate a salt
         const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(this.local.password, salt);
+        const passwordHash = await bcrypt.hash(this.local.lozinka, salt);
         
         // Reasign hashed version over original, plain text password
-        this.local.password = passwordHash;
+        this.local.lozinka = passwordHash;
         next();
     } catch(error) {
         next(error)

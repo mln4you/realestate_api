@@ -24,5 +24,7 @@ app.use(bodyParser.json());
 // routes
 app.use('/users', users);
 
+
 // start server
 app.listen(port, () => console.log('Example app listening on port 3000!'))
+/* email.send(mailOptions) */

@@ -1,6 +1,7 @@
 const Joi = require('joi');
 
 module.exports  = {
+    
     validateBody: (schema) => {
         return (req, res, next) => {
             const result = Joi.validate(req.body, schema);
@@ -19,7 +20,10 @@ module.exports  = {
         //consider length
         authSchema: Joi.object().keys({
             email: Joi.string().email().required(),
-            password: Joi.string().required()
-        })
+            lozinka: Joi.string().required()
+        }),
+        confirmedSchema: Joi.object().keys({
+            status: Joi.boolean().invalid(false).required(),
+        }),
     }
 }
