@@ -1,7 +1,8 @@
 const User = require('../models/user');
-const email = require('../services/email');
+const Email = require('../services/email');
 const { signToken } = require('../services/jwt-generator');
-const bcrypt = require('bcryptjs');
+const { verify_token } = require('../services/token-generator');
+const { mailOptions } = require('../services/helpers/confirmationEmailOptions');
 
 module.exports = {
     
@@ -15,38 +16,28 @@ module.exports = {
         if(foundUser) {
             return res.status(403).json({error: "Email je vec u upotrebi"});
         }
+        
+        const emailToken = await verify_token();
+
         // Create a new user
         const newUser = new User({
             method: 'local',
             local: {
-                email : email,
-                lozinka : lozinka
-            }
+                email: email,
+                lozinka: lozinka
+            },
+            verify_token : emailToken
         });
         await newUser.save();
 
         // Generate token
-        const token = signToken(newUser);
-        
-        // Generate a salt
-        const salt = await bcrypt.genSalt(10);
-        const idHash = await bcrypt.hash(newUser.id, salt);
-
-        // Send confirmational Email
-        let mailOptions = {
-            from: 'tester@server.com',
-            to: newUser.email,
-            subject: 'Potvrdite email',
-            text: 'Plaintext version of the message',
-            html: `<p>Kliknite na ovaj <a href="localhost:3000/confirm?id=${idHash}>link</a> kako bi ste potvrdili vasu email adresu</p>`
-        };
+        const token = await signToken(newUser);
         try{
-            await email.send(mailOptions);
+            await Email.send(await mailOptions(newUser, emailToken));
         }catch(error){
-            return res.status(400).json(error);
+            return res.status(400).json(error.message);
         }
         
-
         // Respond with token
         res.status(200).json({token});
     },
@@ -55,7 +46,7 @@ module.exports = {
     signIn : async (req, res, next) => {
 
         // Generate token
-        const token = signToken(req.user);
+        const token = await signToken(req.user);
         res.status(200).json({token});
     },
 
@@ -67,21 +58,117 @@ module.exports = {
     // Google oauth method
     googleOath: async (req, res, next) => {
         // Generate token
-        const token = signToken(req.user);
+        const token = await signToken(req.user);
         res.status(200).json({token});
     },
 
     // Facebook oauth method
     facebookOath: async (req, res, next) => {
         // Generate token
-        const token = signToken(req.user);
+        const token = await signToken(req.user);
         res.status(200).json({token});
     },
     
-    // Confirm user
+    // Email confirmation 
     emailConfirm: async (req, res, next) => {
+        let token = req.body.token;
         
-        console.log(req.body);
-        res.status(200).json("test");
-    } 
+        if(req.user.verify_token === token){
+            await User.findByIdAndUpdate(  
+
+                // the id of the item to find
+                req.user.id,
+            
+                // the change to be made. Mongoose will smartly combine your existing 
+                // document with this change, which allows for partial updates too
+                { "status" : true },
+            
+                // an option that asks mongoose to return the updated version 
+                // of the document instead of the pre-updated one.
+                {new: true},
+            
+                // the callback function
+                (err, user) => {
+                // Handle any possible database errors
+                    if (err) return res.status(500).send(err);
+                    return res.status(200).send(user);
+                }
+            )
+        }else{
+            return res.status(422).json({"error": "Token se ne podudara !"});
+        }
+    },
+
+    // Resend email with token
+    emailConfirmResend: async (req, res, next) => {
+        const token = await verify_token();
+        
+        if(req.user){
+            const updatedUser = await User.findByIdAndUpdate(  
+
+                // the id of the item to find
+                req.user.id,
+            
+                // the change to be made. Mongoose will smartly combine your existing 
+                // document with this change, which allows for partial updates too
+                { "verify_token" : token },
+            
+                // an option that asks mongoose to return the updated version 
+                // of the document instead of the pre-updated one.
+                {new: true},
+            
+                // the callback function
+                (err, user) => {
+                // Handle any possible database errors
+                    if (err) return res.status(500).send(err);  
+                }
+            );
+            
+            // Send confirmational Email
+            try{
+                Email.send(await mailOptions(updatedUser, emailToken));
+            }catch(error){
+                return res.status(400).json(error.message);
+            }
+            
+            // Return success 
+            return res.status(200).send(user);
+        }else{
+            return res.status(422).json({error: "user not found"});     
+        }   
+    },
+    // Fill other users data
+    fillUserData: async (req, res, next) => {
+        
+        // Request data
+        const data = req.body;
+
+        if(req.user){
+            const updatedUser = await User.findByIdAndUpdate(  
+
+                // the id of the item to find
+                req.user.id,
+            
+                // the change to be made. Mongoose will smartly combine your existing 
+                // document with this change, which allows for partial updates too
+                { 
+                    "ime": data.ime ,
+                    "prezime" : data.prezime
+                },
+            
+                // an option that asks mongoose to return the updated version 
+                // of the document instead of the pre-updated one.
+                {new: true},
+            
+                // the callback function
+                (err, user) => {
+                // Handle any possible database errors
+                    if (err) return res.status(500).json({error : err.message});  
+                    return res.status(200).send(user);
+                }
+            );
+        }else{
+            return res.status(422).json({error: "user not found"});  
+        }
+    }   
 }

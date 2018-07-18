@@ -1,6 +1,6 @@
 // dependencies
 const express = require('express');
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -17,7 +17,7 @@ mongoose.connect('mongodb://localhost:27017/apiAuth',
 // app init
 const app = express();
 
-// middlewares
+// global middlewares
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 
@@ -26,5 +26,4 @@ app.use('/users', users);
 
 
 // start server
-app.listen(port, () => console.log('Example app listening on port 3000!'))
-/* email.send(mailOptions) */
+app.listen(port, () => console.log(`Example app listening on port ${port}`))
