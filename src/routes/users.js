@@ -37,10 +37,13 @@ router.route('/emailConfirm')
 router.route('/emailConfirmResend')
     .post(passportJWT, UsersController.emailConfirmResend);
 
-    // Resend email confirmation token
-    //Consider incuding confirmUser middleware
+    // Fill user data
 router.route('/fillUserData')
-    .post(passportJWT, validateBody(schemas.userData), UsersController.fillUserData);
+    .post(passportJWT, confirmUser(schemas.confirmedSchema), validateBody(schemas.userDataSchema), UsersController.fillUserData);
+
+    // Delete user
+router.route('/deleteUser')
+    .delete(passportJWT, confirmUser(schemas.confirmedSchema), UsersController.deleteUser);
 
 module.exports = router;
 

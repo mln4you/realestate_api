@@ -83,6 +83,17 @@ userSchema.pre('save', async function (next) {
     }
 });
 
+//When remove method is triggered do this before
+userSchema.pre('remove', async function (next) {
+    var user = this;
+        user.update(
+            { korisnici: user._id }, 
+            { $pull: { korisnici: user._id } }, 
+            { multi: true }, 
+            next()
+        );
+});
+
 // Compare passwords
 userSchema.methods.isValidPassword = async function(newPassword) {
     try{

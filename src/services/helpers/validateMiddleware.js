@@ -41,10 +41,9 @@ module.exports  = {
 
         confirmedSchema: Joi.boolean().invalid(false).required(),
 
-        userData: Joi.object().keys({
+        userDataSchema: Joi.object().keys({
             ime: Joi.string().required(),
             prezime: Joi.string().required()
         }),
-    
     }
 }

@@ -6,9 +6,9 @@ const Schema = mongoose.Schema
 const UserTypeSchema = Schema({
     tip: {
         type: String,
-        required: [true, "Tip je obavezan"]
-    },
-    korisnik: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+        required: [false, "Tip je obavezan"]
+        },
+    korisnici: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 })
 
 const UserType = mongoose.model("UserType", UserTypeSchema)

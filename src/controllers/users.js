@@ -152,7 +152,7 @@ module.exports = {
                 // the change to be made. Mongoose will smartly combine your existing 
                 // document with this change, which allows for partial updates too
                 { 
-                    "ime": data.ime ,
+                    "ime": data.ime,
                     "prezime" : data.prezime
                 },
             
@@ -170,5 +170,15 @@ module.exports = {
         }else{
             return res.status(422).json({error: "user not found"});  
         }
+    },
+    deleteUser: async (req, res, next) => {
+        try{
+            const user_id = req.user.id;
+            const deletedUser = await User.findOne(req.user.email);
+            await deletedUser.remove();
+            return res.status(200).json({deletedUser});
+        }catch(error){
+            return res.status(422).send(error.message);
+        }     
     }   
 }
