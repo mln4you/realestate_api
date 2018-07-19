@@ -37,13 +37,18 @@ router.route('/emailConfirm')
 router.route('/emailConfirmResend')
     .post(passportJWT, UsersController.emailConfirmResend);
 
-    // Fill user data
+    // Fill user data 
+    // Consider first middleware confirmUser
 router.route('/fillUserData')
-    .post(passportJWT, confirmUser(schemas.confirmedSchema), validateBody(schemas.userDataSchema), UsersController.fillUserData);
+    .post(passportJWT, validateBody(schemas.userDataSchema), UsersController.fillUserData);
 
     // Delete user
 router.route('/deleteUser')
     .delete(passportJWT, confirmUser(schemas.confirmedSchema), UsersController.deleteUser);
+
+    // Test show user
+router.route('/testUser')
+    .get(passportJWT, UsersController.testUser);
 
 module.exports = router;
 

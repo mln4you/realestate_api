@@ -36,7 +36,7 @@ const userSchema = new Schema({
             lowercase: true
         }
     },
-    tip : [{ type: Schema.Types.ObjectId, ref: 'UserType' }],
+    tip : { type: Schema.Types.ObjectId, ref: 'UserType' },
     uloga : [{ type: Schema.Types.ObjectId, ref: 'UserRole' }],
     ime : {
         type: String,

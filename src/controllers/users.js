@@ -3,6 +3,7 @@ const Email = require('../services/email');
 const { signToken } = require('../services/jwt-generator');
 const { verify_token } = require('../services/token-generator');
 const { mailOptions } = require('../services/helpers/confirmationEmailOptions');
+const UserType = require('../models/user_type');
 
 module.exports = {
     
@@ -143,30 +144,22 @@ module.exports = {
         // Request data
         const data = req.body;
 
-        if(req.user){
-            const updatedUser = await User.findByIdAndUpdate(  
 
-                // the id of the item to find
-                req.user.id,
+        if(req.user){
+            const updatedUser = await User.findById(req.user.id);
+            updatedUser.ime = data.ime;
+            updatedUser.prezime = data.prezime;
+            updatedUser.tip = data.tipId;
+            updatedUser.save();
             
-                // the change to be made. Mongoose will smartly combine your existing 
-                // document with this change, which allows for partial updates too
-                { 
-                    "ime": data.ime,
-                    "prezime" : data.prezime
-                },
+            const userType = UserType.findById(data.tipId).populate('User')
+                        .exec(function (err, tip){
+                            if(err) res.status(500).json({error : err.message}); 
+                            tip.korisnici.push(updatedUser);
+                            tip.save();
+                            return res.status(200).send(updatedUser);  
+                        });
             
-                // an option that asks mongoose to return the updated version 
-                // of the document instead of the pre-updated one.
-                {new: true},
-            
-                // the callback function
-                (err, user) => {
-                // Handle any possible database errors
-                    if (err) return res.status(500).json({error : err.message});  
-                    return res.status(200).send(user);
-                }
-            );
         }else{
             return res.status(422).json({error: "user not found"});  
         }
@@ -180,5 +173,8 @@ module.exports = {
         }catch(error){
             return res.status(422).send(error.message);
         }     
+    },
+    testUser: async (req, res, next) => {
+        /* Must see how */
     }   
 }

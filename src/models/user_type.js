@@ -6,7 +6,7 @@ const Schema = mongoose.Schema
 const UserTypeSchema = Schema({
     tip: {
         type: String,
-        required: [false, "Tip je obavezan"]
+        required: [true, "Tip je obavezan"]
         },
     korisnici: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 })
