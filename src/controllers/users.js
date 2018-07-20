@@ -7,143 +7,11 @@ const UserType = require('../models/user_type');
 
 module.exports = {
     
-    // Sign in method
-    signUp : async (req, res, next) => {
-        
-        // Email && password
-        const { email, lozinka }  = req.value.body;
-        // Check is there a user with same email
-        const foundUser = await User.findOne({ "local.email" : email });
-        if(foundUser) {
-            return res.status(403).json({error: "Email je vec u upotrebi"});
-        }
-        
-        const emailToken = await verify_token();
-
-        // Create a new user
-        const newUser = new User({
-            method: 'local',
-            local: {
-                email: email,
-                lozinka: lozinka
-            },
-            verify_token : emailToken
-        });
-        await newUser.save();
-
-        // Generate token
-        const token = await signToken(newUser);
-        try{
-            await Email.send(await mailOptions(newUser, emailToken));
-        }catch(error){
-            return res.status(400).json(error.message);
-        }
-        
-        // Respond with token
-        res.status(200).json({token});
-    },
-    
-    // Sign up method
-    signIn : async (req, res, next) => {
-
-        // Generate token
-        const token = await signToken(req.user);
-        res.status(200).json({token});
-    },
-
-    // Some of protected api resources
-    secret : async (req, res, next) => {
-        res.status(200).json({secret : "resource"});
-    },
-    
-    // Google oauth method
-    googleOath: async (req, res, next) => {
-        // Generate token
-        const token = await signToken(req.user);
-        res.status(200).json({token});
-    },
-
-    // Facebook oauth method
-    facebookOath: async (req, res, next) => {
-        // Generate token
-        const token = await signToken(req.user);
-        res.status(200).json({token});
-    },
-    
-    // Email confirmation 
-    emailConfirm: async (req, res, next) => {
-        let token = req.body.token;
-        
-        if(req.user.verify_token === token){
-            await User.findByIdAndUpdate(  
-
-                // the id of the item to find
-                req.user.id,
-            
-                // the change to be made. Mongoose will smartly combine your existing 
-                // document with this change, which allows for partial updates too
-                { "status" : true },
-            
-                // an option that asks mongoose to return the updated version 
-                // of the document instead of the pre-updated one.
-                {new: true},
-            
-                // the callback function
-                (err, user) => {
-                // Handle any possible database errors
-                    if (err) return res.status(500).send(err);
-                    return res.status(200).send(user);
-                }
-            )
-        }else{
-            return res.status(422).json({"error": "Token se ne podudara !"});
-        }
-    },
-
-    // Resend email with token
-    emailConfirmResend: async (req, res, next) => {
-        const token = await verify_token();
-        
-        if(req.user){
-            const updatedUser = await User.findByIdAndUpdate(  
-
-                // the id of the item to find
-                req.user.id,
-            
-                // the change to be made. Mongoose will smartly combine your existing 
-                // document with this change, which allows for partial updates too
-                { "verify_token" : token },
-            
-                // an option that asks mongoose to return the updated version 
-                // of the document instead of the pre-updated one.
-                {new: true},
-            
-                // the callback function
-                (err, user) => {
-                // Handle any possible database errors
-                    if (err) return res.status(500).send(err);  
-                }
-            );
-            
-            // Send confirmational Email
-            try{
-                Email.send(await mailOptions(updatedUser, emailToken));
-            }catch(error){
-                return res.status(400).json(error.message);
-            }
-            
-            // Return success 
-            return res.status(200).send(user);
-        }else{
-            return res.status(422).json({error: "user not found"});     
-        }   
-    },
-    // Fill other users data
+    // Fill other users data after registration
     fillUserData: async (req, res, next) => {
         
         // Request data
         const data = req.body;
-
 
         if(req.user){
             const updatedUser = await User.findById(req.user.id);
@@ -153,28 +21,46 @@ module.exports = {
             updatedUser.save();
             
             const userType = UserType.findById(data.tipId).populate('User')
-                        .exec(function (err, tip){
-                            if(err) res.status(500).json({error : err.message}); 
-                            tip.korisnici.push(updatedUser);
-                            tip.save();
-                            return res.status(200).send(updatedUser);  
-                        });
+                .exec(function (err, tip){
+                    if(err) res.status(500).json({error : err.message}); 
+                        tip.korisnici.push(updatedUser);
+                        tip.save();
+                    return res.status(200).send(updatedUser);  
+            });
             
         }else{
             return res.status(422).json({error: "user not found"});  
         }
     },
-    deleteUser: async (req, res, next) => {
+
+    // Removes specific user
+    delete: async (req, res, next) => {
         try{
-            const user_id = req.user.id;
-            const deletedUser = await User.findOne(req.user.email);
+            const deletedUser = await User.findOne({ email : req.params.email });
             await deletedUser.remove();
             return res.status(200).json({deletedUser});
         }catch(error){
             return res.status(422).send(error.message);
         }     
     },
-    testUser: async (req, res, next) => {
-        /* Must see how */
+    // Shows specific user
+    user: async (req, res, next) => {
+        
+        // Find logged in user and load it from db with type relation
+        const user = await User.findOne({ "local.email" :req.params.email }).populate('tip')
+            .exec(function (err, user){
+                
+                if(err) res.status(500).json({error : err.message}); 
+                
+                return res.status(200).send(user);  
+            });
+    },
+    all: async (req, res , next) => {
+        try {
+            const results = await User.find({});
+            return res.status(200).send(results); 
+          } catch (err) {
+            res.status(500).json({error : err.message}); 
+          }
     }   
 }

@@ -1,54 +1,30 @@
 const express = require('express');
 const router = require('express-promise-router')();
 const UsersController = require('../controllers/users');
-const {  validateBody, confirmUser, schemas } = require('../services/helpers/validateMiddleware');
+const { validateBody, confirmUser, schemas } = require('../services/helpers/validateMiddleware');
 const passport = require('passport');
 const passportConf = require('../services/passport/passport');
 const passportSignIn = passport.authenticate('local', { session : false });
 const passportJWT = passport.authenticate('jwt', { session: false });
-const passportGoogle = passport.authenticate('googleToken', {session : false});
-const passportFacebook = passport.authenticate('facebookToken', {session : false});
-
-// Register user localy
-router.route('/signup')
-    .post(validateBody(schemas.authSchema), UsersController.signUp); 
-
-// Login user localy
-router.route('/signin')
-    .post(validateBody(schemas.authSchema), passportSignIn, UsersController.signIn);
-
-// Example resource user localy
-router.route('/secret')
-    .get(passportJWT, confirmUser(schemas.confirmedSchema), UsersController.secret);
-
-// Register user with Google
-router.route('/oauth/google')
-    .post(passportGoogle, UsersController.googleOath);
-    
-// Register user with Facebook
-router.route('/oauth/facebook')
-    .post(passportFacebook, UsersController.facebookOath);
-
-    // Email confirm
-router.route('/emailConfirm')
-.post(passportJWT, UsersController.emailConfirm);
-
-    // Resend email confirmation token
-router.route('/emailConfirmResend')
-    .post(passportJWT, UsersController.emailConfirmResend);
 
     // Fill user data 
     // Consider first middleware confirmUser
 router.route('/fillUserData')
-    .post(passportJWT, validateBody(schemas.userDataSchema), UsersController.fillUserData);
+    .put(passportJWT, validateBody(schemas.userDataSchema), UsersController.fillUserData);
 
     // Delete user
-router.route('/deleteUser')
-    .delete(passportJWT, confirmUser(schemas.confirmedSchema), UsersController.deleteUser);
+router.route('/delete/:email')
+    .delete(passportJWT, confirmUser(schemas.confirmedSchema), UsersController.delete);
 
-    // Test show user
-router.route('/testUser')
-    .get(passportJWT, UsersController.testUser);
+    // Show specific user
+     // Consider first middleware confirmUser
+router.route('/user/:email')
+    .get(passportJWT, UsersController.user);
+
+    // Show specific user
+     // Consider first middleware confirmUser
+router.route('/all')
+    .get(passportJWT, UsersController.all);
 
 module.exports = router;
 

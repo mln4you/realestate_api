@@ -4,6 +4,7 @@ const port = process.env.PORT || 5000;
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const auth = require('./src/routes/auth')
 const users = require('./src/routes/users');
 const userTypes = require('./src/routes/userTypes');
 
@@ -23,6 +24,7 @@ app.use(morgan('dev'));
 app.use(bodyParser.json());
 
 // routes
+app.use('/auth', auth);
 app.use('/users', users);
 app.use('/userType', userTypes);
 

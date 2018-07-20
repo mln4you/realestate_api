@@ -10,4 +10,7 @@ const passportJWT = passport.authenticate('jwt', { session: false });
 router.route('/create')
     .post(passportJWT, UserTypesController.create); 
 
+router.route('/edit')
+    .post(passportJWT, UserTypesController.create); 
+
 module.exports = router;
