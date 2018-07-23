@@ -8,9 +8,10 @@ const passportJWT = passport.authenticate('jwt', { session: false });
 
 // Create new user type
 router.route('/create')
-    .post(passportJWT, UserTypesController.create); 
+    .post(passportJWT, confirmUser(schemas.confirmedSchema), UserTypesController.create); 
 
-router.route('/edit')
-    .post(passportJWT, UserTypesController.create); 
+// Edit user type
+router.route('/edit/:id')
+    .post(passportJWT, confirmUser(schemas.confirmedSchema), UserTypesController.edit); 
 
 module.exports = router;
