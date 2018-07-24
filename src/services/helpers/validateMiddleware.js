@@ -44,7 +44,8 @@ module.exports  = {
         userDataSchema: Joi.object().keys({
             ime: Joi.string().required(),
             prezime: Joi.string().required(),
-            tipId: Joi.string().required()
+            tipId: Joi.string().required(),
+            ulogaId: Joi.string().required()
         }),
     }
 }

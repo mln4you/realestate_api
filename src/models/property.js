@@ -13,7 +13,7 @@ const PropertySchema = Schema({
         type: Number,
         required: [true, "Price is required"]
     }
-})
+});
 
 const Property = mongoose.model("Property", PropertySchema)
 module.exports = Property

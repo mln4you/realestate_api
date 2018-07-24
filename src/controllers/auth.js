@@ -6,7 +6,7 @@ const { mailOptions } = require('../services/helpers/confirmationEmailOptions');
 const UserType = require('../models/user_type');
 
 module.exports = {
-    // Sign in method
+    // Sign up method
     signUp : async (req, res, next) => {
         
         // Email && password
@@ -42,7 +42,7 @@ module.exports = {
         res.status(200).json({token});
     },
     
-    // Sign up method
+    // Sign in method
     signIn : async (req, res, next) => {
 
         // Generate token

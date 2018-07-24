@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const auth = require('./src/routes/auth')
 const users = require('./src/routes/users');
 const userTypes = require('./src/routes/userTypes');
+const userRoles = require('./src/routes/userRoles');
 
 //connect to db
 mongoose.Promise = global.Promise;
@@ -27,6 +28,7 @@ app.use(bodyParser.json());
 app.use('/auth', auth);
 app.use('/users', users);
 app.use('/userType', userTypes);
+app.use('/userRole', userRoles);
 
 // start server
 app.listen(port, () => console.log(`Example app listening on port ${port}`))

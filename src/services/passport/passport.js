@@ -88,8 +88,10 @@ passport.use('facebookToken', new FacebookTokenStrategy({
 
 // LOCAL STRATEGY
 passport.use(new LocalStrategy({
-    usernameField : 'email'
+    usernameField : 'email',
+    passwordField: 'lozinka'
 }, async (email, lozinka, done) => {
+    console.log(email);
     try{
             // Find the user given the email
         const user = await User.findOne({ "local.email": email });

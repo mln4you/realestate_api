@@ -1,4 +1,5 @@
 const UserType = require('../models/user_type');
+const User = require('../models/user');
 const { signToken } = require('../services/jwt-generator');
 const mongoose = require('mongoose');
 
@@ -31,9 +32,19 @@ module.exports = {
             return res.status(200).json(userType);
         });
     },
-    delete : (req, res, next) => {
+    delete : async (req, res, next) => {
         const userTypeId = req.params.id;
-
-        // Make sure in the model to set pre remove middleware to check is some user using this type if it does throw error, else remove
+        const userType = await UserType.findById(userTypeId);
+        
+        if(!Array.isArray(userType.korisnici) || !userType.korisnici.length){
+            await UserType.findByIdAndRemove(userTypeId, (err, type) => {
+                if(err){
+                    return res.status(500).json(err.message);
+                }
+                return res.status(200).json(type);
+            });
+        }else{
+            return res.status(500).json({error: "Cannot delete this user type, there are users associated with it"});
+        } 
     }
 }

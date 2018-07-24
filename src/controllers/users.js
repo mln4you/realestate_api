@@ -4,6 +4,7 @@ const { signToken } = require('../services/jwt-generator');
 const { verify_token } = require('../services/token-generator');
 const { mailOptions } = require('../services/helpers/confirmationEmailOptions');
 const UserType = require('../models/user_type');
+const UserRole = require('../models/user_role');
 
 module.exports = {
     
@@ -18,16 +19,22 @@ module.exports = {
             updatedUser.ime = data.ime;
             updatedUser.prezime = data.prezime;
             updatedUser.tip = data.tipId;
+            updatedUser.uloga = data.ulogaId;
             updatedUser.save();
             
-            const userType = UserType.findById(data.tipId).populate('User')
+            UserType.findById(data.tipId).populate('User')
                 .exec(function (err, tip){
                     if(err) res.status(500).json({error : err.message}); 
                         tip.korisnici.push(updatedUser);
                         tip.save();
-                    return res.status(200).send(updatedUser);  
             });
-            
+            UserRole.findById(data.ulogaId).populate('User')
+                .exec(function (err, uloga){
+                    if(err) res.status(500).json({error : err.message}); 
+                        uloga.korisnici.push(updatedUser);
+                        uloga.save();
+            });
+            return res.status(200).send(updatedUser); 
         }else{
             return res.status(422).json({error: "user not found"});  
         }
@@ -36,11 +43,14 @@ module.exports = {
     // Removes specific user
     delete: async (req, res, next) => {
         try{
-            const deletedUser = await User.findOne({ email : req.params.email });
-            await deletedUser.remove();
-            return res.status(200).json({deletedUser});
-        }catch(error){
+            const deletedUser = await User.findOne({ "local.email" : req.params.email });
+            if(deletedUser){
+                await deletedUser.remove();
+                return res.status(200).json({deletedUser});
+            }
             return res.status(422).send(error.message);
+        }catch(error){
+            return res.status(422).json({error: "user not found"});  
         }     
     },
     // Shows specific user
@@ -48,12 +58,16 @@ module.exports = {
         
         // Find logged in user and load it from db with type relation
         const user = await User.findOne({ "local.email" :req.params.email }).populate('tip')
+            .populate('uloga')
             .exec(function (err, user){
-                
                 if(err) res.status(500).json({error : err.message}); 
-                
-                return res.status(200).send(user);  
             });
+            if(user){
+                return res.status(200).send(user);  
+            }else{
+                if(err) res.status(500).json({error: "user not found"});  
+            }
+            
     },
     all: async (req, res , next) => {
         try {

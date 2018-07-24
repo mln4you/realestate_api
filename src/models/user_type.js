@@ -9,7 +9,7 @@ const UserTypeSchema = Schema({
         required: [true, "Tip je obavezan"]
         },
     korisnici: [{ type: Schema.Types.ObjectId, ref: 'User' }]
-})
+});
 
 const UserType = mongoose.model("UserType", UserTypeSchema)
 module.exports = UserType
