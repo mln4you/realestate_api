@@ -5,6 +5,7 @@ const { verify_token } = require('../services/token-generator');
 const { mailOptions } = require('../services/helpers/confirmationEmailOptions');
 const UserType = require('../models/user_type');
 const UserRole = require('../models/user_role');
+const mongoose = require('mongoose');
 
 module.exports = {
     
@@ -42,17 +43,34 @@ module.exports = {
 
     // Removes specific user
     delete: async (req, res, next) => {
-        try{
-            const deletedUser = await User.findOne({ "local.email" : req.params.email });
 
-            if(deletedUser){
-                await deletedUser.remove();
-                return res.status(200).json({deletedUser});
-            }
-            return res.status(422).send(error.message);
-        }catch(error){
-            return res.status(422).json({error: error.message});  
-        }     
+        // try with middleware
+
+
+        return User.findOne({ "local.email" : req.params.email }, function(err, user){
+            return user.remove(function(err,user){
+                if(!err) {
+             
+                    UserRole.findByIdAndUpdate(new mongoose.Types.ObjectId(user.uloga),
+                        { $pull: { korisnici: new mongoose.Types.ObjectId(user.id) } },
+                        function(err){
+                            if(err) {
+                                return res.status(422).json({error: err.message}); 
+                            }
+                    });
+                    UserType.findByIdAndUpdate(new mongoose.Types.ObjectId(user.tip),
+                        { $pull: { korisnici: new mongoose.Types.ObjectId(user.id) } },
+                        function(err){
+                            if(err) {
+                                return res.status(422).json({error: err.message}); 
+                            }
+                    });
+                    return res.status(200).send(user);
+                } else {
+                    return res.status(422).json({error: err.message});                                
+                }
+            });
+        });
     },
     // Shows specific user
     user: async (req, res, next) => {
