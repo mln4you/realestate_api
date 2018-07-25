@@ -44,13 +44,14 @@ module.exports = {
     delete: async (req, res, next) => {
         try{
             const deletedUser = await User.findOne({ "local.email" : req.params.email });
+
             if(deletedUser){
                 await deletedUser.remove();
                 return res.status(200).json({deletedUser});
             }
             return res.status(422).send(error.message);
         }catch(error){
-            return res.status(422).json({error: "user not found"});  
+            return res.status(422).json({error: error.message});  
         }     
     },
     // Shows specific user

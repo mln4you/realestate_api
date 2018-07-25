@@ -1,6 +1,6 @@
 const User = require('../models/user');
 const Email = require('../services/email');
-const { signToken } = require('../services/jwt-generator');
+const { signToken , decodeJWT } = require('../services/jwt-generator');
 const { verify_token } = require('../services/token-generator');
 const { mailOptions } = require('../services/helpers/confirmationEmailOptions');
 const UserType = require('../models/user_type');
@@ -44,7 +44,6 @@ module.exports = {
     
     // Sign in method
     signIn : async (req, res, next) => {
-
         // Generate token
         const token = await signToken(req.user);
         res.status(200).json({token});
@@ -52,7 +51,8 @@ module.exports = {
 
     // Some of protected api resources
     secret : async (req, res, next) => {
-        res.status(200).json({secret : "resource"});
+        const token = req.headers['authorization']||'';
+        res.status(200).json(decodeJWT(token).sub);
     },
     
     // Google oauth method

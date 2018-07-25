@@ -14,17 +14,15 @@ router.route('/fillUserData')
 
     // Delete user
 router.route('/delete/:email')
-    .delete(passportJWT, confirmUser(schemas.confirmedSchema), UsersController.delete);
+    .delete(passportJWT , confirmUser(schemas.confirmedSchema), UsersController.delete);
 
     // Show specific user
-     // Consider first middleware confirmUser
 router.route('/user/:email')
-    .get(passportJWT, UsersController.user);
+    .get(passportJWT, confirmUser(schemas.confirmedSchema), UsersController.user);
 
     // Show specific user
-     // Consider first middleware confirmUser
 router.route('/all')
-    .get(passportJWT, UsersController.all);
+    .get(passportJWT, confirmUser(schemas.confirmedSchema), UsersController.all);
 
 module.exports = router;
 

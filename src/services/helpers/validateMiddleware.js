@@ -1,4 +1,6 @@
 const Joi = require('joi');
+const User = require('../../models/user');
+const { decodeJWT } = require('../../services/jwt-generator');
 
 module.exports  = {
     
@@ -17,13 +19,13 @@ module.exports  = {
         }
     },
     confirmUser: (schema) => {
-        return (req, res, next) => {
-
-            const result = Joi.validate(req.user.status, schema);
+        return async (req, res, next) => {
+            const token = req.headers['authorization']||'';
+            const user = await User.findById(decodeJWT(token).sub);
+            const result = Joi.validate(user.status, schema);
             if(result.error){
-                return res.status(422).json({error : "user not confirmed"});
+                return res.status(403).json({error : "user not confirmed"});
             }
-            
             if(!req.value) {
                 req.value = {};
             }

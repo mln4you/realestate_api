@@ -87,12 +87,12 @@ userSchema.pre('save', async function (next) {
 userSchema.pre('remove', async function (next) {
     var user = this;
         user.model('UserType').update(
-            { korisnici: user._id }, 
+            { _id: user.tip }, 
             { $pull: { korisnici: user._id } }, 
             { multi: true }, 
         );
         user.model('UserRole').update(
-            { korisnici: user._id }, 
+            { _id: user.uloga }, 
             { $pull: { korisnici: user._id } }, 
             { multi: true }, 
         );
