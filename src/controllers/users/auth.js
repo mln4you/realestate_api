@@ -1,9 +1,9 @@
-const User = require('../models/user');
-const Email = require('../services/email');
-const { signToken , decodeJWT } = require('../services/jwt-generator');
-const { verify_token } = require('../services/token-generator');
-const { mailOptions } = require('../services/helpers/confirmationEmailOptions');
-const UserType = require('../models/user_type');
+const User = require('../../models/user');
+const Email = require('../../services/email');
+const { signToken , decodeJWT } = require('../../services/jwt-generator');
+const { verify_token } = require('../../services/token-generator');
+const { mailOptions } = require('../../services/helpers/confirmationEmailOptions');
+const UserType = require('../../models/user_type');
 
 module.exports = {
     // Sign up method
@@ -13,6 +13,7 @@ module.exports = {
         const { email, lozinka }  = req.value.body;
         // Check is there a user with same email
         const foundUser = await User.findOne({ "local.email" : email });
+        
         if(foundUser) {
             return res.status(403).json({error: "Email je vec u upotrebi"});
         }

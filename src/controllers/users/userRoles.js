@@ -1,6 +1,6 @@
-const UserRole = require('../models/user_role');
-const User = require('../models/user');
-const { signToken } = require('../services/jwt-generator');
+const UserRole = require('../../models/user_role');
+const User = require('../../models/user');
+const { signToken } = require('../../services/jwt-generator');
 const mongoose = require('mongoose');
 
 

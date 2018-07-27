@@ -1,11 +1,10 @@
-const User = require('../models/user');
-const Email = require('../services/email');
-const { signToken } = require('../services/jwt-generator');
-const { verify_token } = require('../services/token-generator');
-const { mailOptions } = require('../services/helpers/confirmationEmailOptions');
-const UserType = require('../models/user_type');
-const UserRole = require('../models/user_role');
-const mongoose = require('mongoose');
+const User = require('../../models/user');
+const Email = require('../../services/email');
+const { signToken } = require('../../services/jwt-generator');
+const { verify_token } = require('../../services/token-generator');
+const { mailOptions } = require('../../services/helpers/confirmationEmailOptions');
+const UserType = require('../../models/user_type');
+const UserRole = require('../../models/user_role');
 
 module.exports = {
     
@@ -45,32 +44,19 @@ module.exports = {
     delete: async (req, res, next) => {
 
         // try with middleware
-
-
-        return User.findOne({ "local.email" : req.params.email }, function(err, user){
-            return user.remove(function(err,user){
-                if(!err) {
-             
-                    UserRole.findByIdAndUpdate(new mongoose.Types.ObjectId(user.uloga),
-                        { $pull: { korisnici: new mongoose.Types.ObjectId(user.id) } },
-                        function(err){
-                            if(err) {
-                                return res.status(422).json({error: err.message}); 
-                            }
-                    });
-                    UserType.findByIdAndUpdate(new mongoose.Types.ObjectId(user.tip),
-                        { $pull: { korisnici: new mongoose.Types.ObjectId(user.id) } },
-                        function(err){
-                            if(err) {
-                                return res.status(422).json({error: err.message}); 
-                            }
-                    });
-                    return res.status(200).send(user);
-                } else {
-                    return res.status(422).json({error: err.message});                                
-                }
-            });
-        });
+        const user = await User.findOne({ "local.email" : req.params.email });
+        if(!user){
+            return res.status(422).json({error: "user not found"});     
+        }
+        return await user.remove(function(err,user){
+            if(!err) {
+                return res.status(200).send(user);
+            } else {
+                return res.status(422).json({error: err.message});                                
+            }
+        return res.status(200).send(user);
+    
+        })
     },
     // Shows specific user
     user: async (req, res, next) => {
