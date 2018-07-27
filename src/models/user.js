@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const Schema = mongoose.Schema;
+const UserRole = require('./user_role');
+const UserType = require('./user_type');
 
 // Create a schema
 const userSchema = new Schema({
@@ -36,8 +38,8 @@ const userSchema = new Schema({
             lowercase: true
         }
     },
-    tip : [{ type: Schema.Types.ObjectId, ref: 'UserType' }],
-    uloga : [{ type: Schema.Types.ObjectId, ref: 'UserRole' }],
+    tip : { type: Schema.Types.ObjectId, ref: 'UserType' },
+    uloga : { type: Schema.Types.ObjectId, ref: 'UserRole' },
     ime : {
         type: String,
     },
@@ -58,7 +60,12 @@ const userSchema = new Schema({
     naziv_kompanije : {
         type: String,
     },
-    favorite_properties : [{ type: Schema.Types.ObjectId, ref: 'Property' }]
+    favorite_properties : [{ type: Schema.Types.ObjectId, ref: 'Property' }],
+    properties: [{ type: Schema.Types.ObjectId, ref: 'Property' }]
+},
+
+{
+  timestamps: true
 });
 
 
@@ -83,10 +90,30 @@ userSchema.pre('save', async function (next) {
     }
 });
 
+//When remove method is triggered do this before
+ userSchema.pre('remove', async function (next) {
+    var user = this;
+        UserRole.findByIdAndUpdate(new mongoose.Types.ObjectId(user.uloga),
+            { $pull: { korisnici: new mongoose.Types.ObjectId(user.id) } },
+            function(err){
+                if(err) {
+                    return res.status(422).json({error: err.message}); 
+                }
+            });
+        UserType.findByIdAndUpdate(new mongoose.Types.ObjectId(user.tip),
+            { $pull: { korisnici: new mongoose.Types.ObjectId(user.id) } },
+            function(err){
+                if(err) {
+                    return res.status(422).json({error: err.message}); 
+            }
+        });
+        next()
+}); 
+
 // Compare passwords
 userSchema.methods.isValidPassword = async function(newPassword) {
     try{
-        return await bcrypt.compare(newPassword, this.local.password);
+        return await bcrypt.compare(newPassword, this.local.lozinka);
     } catch(error){
         throw new Error(error);
     }

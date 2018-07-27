@@ -9,7 +9,7 @@ const UserRoleSchema = Schema({
         type: String,
         required: [true, "Uloga je neophodna"]
     },
-    korisnik: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    korisnici: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 })
 
 const UserRole = mongoose.model("UserRole", UserRoleSchema)

@@ -1,18 +1,19 @@
-const User = require('../models/user');
-const Email = require('../services/email');
-const { signToken } = require('../services/jwt-generator');
-const { verify_token } = require('../services/token-generator');
-const { mailOptions } = require('../services/helpers/confirmationEmailOptions');
+const User = require('../../models/user');
+const Email = require('../../services/email');
+const { signToken , decodeJWT } = require('../../services/jwt-generator');
+const { verify_token } = require('../../services/token-generator');
+const { mailOptions } = require('../../services/helpers/confirmationEmailOptions');
+const UserType = require('../../models/user_type');
 
 module.exports = {
-    
-    // Sign in method
+    // Sign up method
     signUp : async (req, res, next) => {
         
         // Email && password
         const { email, lozinka }  = req.value.body;
         // Check is there a user with same email
         const foundUser = await User.findOne({ "local.email" : email });
+        
         if(foundUser) {
             return res.status(403).json({error: "Email je vec u upotrebi"});
         }
@@ -42,9 +43,8 @@ module.exports = {
         res.status(200).json({token});
     },
     
-    // Sign up method
+    // Sign in method
     signIn : async (req, res, next) => {
-
         // Generate token
         const token = await signToken(req.user);
         res.status(200).json({token});
@@ -52,7 +52,8 @@ module.exports = {
 
     // Some of protected api resources
     secret : async (req, res, next) => {
-        res.status(200).json({secret : "resource"});
+        const token = req.headers['authorization']||'';
+        res.status(200).json(decodeJWT(token).sub);
     },
     
     // Google oauth method
@@ -98,7 +99,6 @@ module.exports = {
             return res.status(422).json({"error": "Token se ne podudara !"});
         }
     },
-
     // Resend email with token
     emailConfirmResend: async (req, res, next) => {
         const token = await verify_token();
@@ -136,39 +136,5 @@ module.exports = {
         }else{
             return res.status(422).json({error: "user not found"});     
         }   
-    },
-    // Fill other users data
-    fillUserData: async (req, res, next) => {
-        
-        // Request data
-        const data = req.body;
-
-        if(req.user){
-            const updatedUser = await User.findByIdAndUpdate(  
-
-                // the id of the item to find
-                req.user.id,
-            
-                // the change to be made. Mongoose will smartly combine your existing 
-                // document with this change, which allows for partial updates too
-                { 
-                    "ime": data.ime ,
-                    "prezime" : data.prezime
-                },
-            
-                // an option that asks mongoose to return the updated version 
-                // of the document instead of the pre-updated one.
-                {new: true},
-            
-                // the callback function
-                (err, user) => {
-                // Handle any possible database errors
-                    if (err) return res.status(500).json({error : err.message});  
-                    return res.status(200).send(user);
-                }
-            );
-        }else{
-            return res.status(422).json({error: "user not found"});  
-        }
-    }   
+    }
 }
