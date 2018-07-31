@@ -1,23 +1,22 @@
-const User = require('../../models/user');
+const User = require('../../models/users/user');
 const Email = require('../../services/email');
 const { signToken , decodeJWT } = require('../../services/jwt-generator');
 const { verify_token } = require('../../services/token-generator');
 const { mailOptions } = require('../../services/helpers/confirmationEmailOptions');
-const UserType = require('../../models/user_type');
+const UserType = require('../../models/users/user_type');
 
 module.exports = {
     // Sign up method
     signUp : async (req, res, next) => {
-        
         // Email && password
         const { email, lozinka }  = req.value.body;
         // Check is there a user with same email
         const foundUser = await User.findOne({ "local.email" : email });
-        
+        // If it is throw new error
         if(foundUser) {
-            return res.status(403).json({error: "Email je vec u upotrebi"});
+            throw new Error( "Email je vec u upotrebi" );
         }
-        
+        // If not build email token
         const emailToken = await verify_token();
 
         // Create a new user
@@ -31,13 +30,11 @@ module.exports = {
         });
         await newUser.save();
 
-        // Generate token
+        // Generate jwt token
         const token = await signToken(newUser);
-        try{
-            await Email.send(await mailOptions(newUser, emailToken));
-        }catch(error){
-            return res.status(400).json(error.message);
-        }
+        
+        // Send confirmation email to the new user
+        await Email.send(await mailOptions(newUser, emailToken));
         
         // Respond with token
         res.status(200).json({token});
@@ -50,7 +47,7 @@ module.exports = {
         res.status(200).json({token});
     },
 
-    // Some of protected api resources
+    // Some of protected api resources this is just an example that decodes jwt token
     secret : async (req, res, next) => {
         const token = req.headers['authorization']||'';
         res.status(200).json(decodeJWT(token).sub);
@@ -91,12 +88,12 @@ module.exports = {
                 // the callback function
                 (err, user) => {
                 // Handle any possible database errors
-                    if (err) return res.status(500).send(err);
+                    if (err) throw new Error(err.message);
                     return res.status(200).send(user);
                 }
             )
         }else{
-            return res.status(422).json({"error": "Token se ne podudara !"});
+            throw new Error("Token nije isti !");
         }
     },
     // Resend email with token
@@ -120,21 +117,19 @@ module.exports = {
                 // the callback function
                 (err, user) => {
                 // Handle any possible database errors
-                    if (err) return res.status(500).send(err);  
+                    if (err) throw new Error(err.message);
                 }
             );
             
             // Send confirmational Email
-            try{
-                Email.send(await mailOptions(updatedUser, emailToken));
-            }catch(error){
-                return res.status(400).json(error.message);
-            }
+            
+            await Email.send(await mailOptions(updatedUser, emailToken));
+           
             
             // Return success 
             return res.status(200).send(user);
         }else{
-            return res.status(422).json({error: "user not found"});     
+            throw new Error("Korisnik nije pronadjen!");  
         }   
     }
 }

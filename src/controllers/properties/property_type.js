@@ -1,4 +1,4 @@
-const PropertyType = require('../../models/property_type');
+const PropertyType = require('../../models/properties/property_type');
 //const mongoose = require('mongoose');
 
 

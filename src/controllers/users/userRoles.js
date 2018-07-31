@@ -1,5 +1,5 @@
-const UserRole = require('../../models/user_role');
-const User = require('../../models/user');
+const UserRole = require('../../models/users/user_role');
+const User = require('../../models/users/user');
 const { signToken } = require('../../services/jwt-generator');
 const mongoose = require('mongoose');
 
@@ -14,9 +14,9 @@ module.exports = {
             uloga: uloga,
           });
           // Save user type
-          userRole.save(function (err) {
+          await userRole.save(function (err) {
 
-            if (err) return res.status(500).json({err});
+            if (err) throw new Error(err.message);
           
         return res.status(200).json(userRole);
         })
@@ -25,10 +25,7 @@ module.exports = {
         const newUserRole = req.body.uloga;
         const userRoleId = req.params.id;
         UserRole.findByIdAndUpdate(userRoleId, { $set: { uloga: newUserRole } }, { new: true, runValidators :true}, (err, userRole) => {
-            if(err){
-                console.log(err);
-                return res.status(500).json({err});
-            }
+            if(err) throw new Error(err.message);
             return res.status(200).json(userRole);
         });
     },
@@ -39,12 +36,12 @@ module.exports = {
         if(!Array.isArray(userRole.korisnici) || !userRole.korisnici.length){
             await UserRole.findByIdAndRemove(userRoleId, (err, uloga) => {
                 if(err){
-                    return res.status(500).json(err.message);
+                    throw new Error(err.message);
                 }
                 return res.status(200).json(uloga);
             });
         }else{
-            return res.status(500).json({error: "Cannot delete this user role, there are users associated with it"});
+            throw new Error("Cannot delete this user role, there are users associated with it");
         } 
     }
 }

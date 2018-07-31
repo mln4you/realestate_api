@@ -1,5 +1,5 @@
-const CityBlock = require('../../models/city_block');
-//const mongoose = require('mongoose');
+const CityBlock = require('../../models/properties/city_block');
+const mongoose = require('mongoose');
 
 
 module.exports = {

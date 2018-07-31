@@ -1,4 +1,4 @@
-const State = require('../../models/state');
+const State = require('../../models/properties/state');
 //const mongoose = require('mongoose');
 
 

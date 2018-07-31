@@ -1,6 +1,6 @@
 const Joi = require('joi');
-const User = require('../../models/user');
-const { decodeJWT } = require('../../services/jwt-generator');
+const User = require('../models/users/user');
+const { decodeJWT } = require('../services/jwt-generator');
 
 module.exports  = {
     
@@ -8,9 +8,8 @@ module.exports  = {
         return (req, res, next) => {
             const result = Joi.validate(req.body, schema);
             if(result.error){
-                return res.status(400).json(result.error);
+                throw new Error(result.error);
             }
-            
             if(!req.value) {
                 req.value = {};
             }
@@ -24,7 +23,7 @@ module.exports  = {
             const user = await User.findById(decodeJWT(token).sub);
             const result = Joi.validate(user.status, schema);
             if(result.error){
-                return res.status(403).json({error : "user not confirmed"});
+                throw new Error("Korisnik nije potvrdjen!");
             }
             if(!req.value) {
                 req.value = {};

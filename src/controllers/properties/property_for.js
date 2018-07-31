@@ -1,4 +1,4 @@
-const PropertyFor = require('../../models/property_for');
+const PropertyFor = require('../../models/properties/property_for');
 //const mongoose = require('mongoose');
 
 

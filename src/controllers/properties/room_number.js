@@ -1,4 +1,4 @@
-const RoomNumber = require('../../models/room_number');
+const RoomNumber = require('../../models/properties/room_number');
 //const mongoose = require('mongoose');
 
 

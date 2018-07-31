@@ -1,5 +1,5 @@
-const UserType = require('../../models/user_type');
-const User = require('../../models/user');
+const UserType = require('../../models/users/user_type');
+const User = require('../../models/users/user');
 const { signToken } = require('../../services/jwt-generator');
 const mongoose = require('mongoose');
 
@@ -14,24 +14,25 @@ module.exports = {
             tip: tip,
           });
           // Save user type
-          userType.save(function (err) {
+          await userType.save(function (err) {
 
-            if (err) return res.status(500).json({err});
+            if (err) throw new Error(err.message);
           
         return res.status(200).json(userType);
         })
     },
+    
     edit: (req, res, next) => {
         const newUserType = req.body.tip;
         const userTypeId = req.params.id;
         UserType.findByIdAndUpdate(userTypeId, { $set: { tip: newUserType } }, { new: true, runValidators :true}, (err, userType) => {
             if(err){
-                console.log(err);
-                return res.status(500).json({err});
+                throw new Error(err.message);
             }
             return res.status(200).json(userType);
         });
     },
+    
     delete : async (req, res, next) => {
         const userTypeId = req.params.id;
         const userType = await UserType.findById(userTypeId);
@@ -39,12 +40,12 @@ module.exports = {
         if(!Array.isArray(userType.korisnici) || !userType.korisnici.length){
             await UserType.findByIdAndRemove(userTypeId, (err, type) => {
                 if(err){
-                    return res.status(500).json(err.message);
+                    throw new Error(err.message);
                 }
                 return res.status(200).json(type);
             });
         }else{
-            return res.status(500).json({error: "Cannot delete this user type, there are users associated with it"});
+            throw new Error("Cannot delete this user type, there are users associated with it");
         } 
     }
 }

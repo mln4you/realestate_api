@@ -1,4 +1,4 @@
-const HeatingType = require('../../models/heating_type');
+const HeatingType = require('../../models/properties/heating_type');
 //const mongoose = require('mongoose');
 
 

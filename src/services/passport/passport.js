@@ -5,7 +5,7 @@ const GooglePlusTokenStrategy = require('passport-google-plus-token');
 const FacebookTokenStrategy = require('passport-facebook-token');
 const  { ExtractJwt } = require('passport-jwt');
 const config = require('../../config');
-const User = require('../../models/user');
+const User = require('../../models/users/user');
 
 
 // JSON WEB TOKENS STRATEGY
