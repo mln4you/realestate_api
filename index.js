@@ -1,13 +1,13 @@
 // dependencies
 const express = require('express');
 const port = process.env.PORT || 5000;
-const winston = require('winston');
+
 
 // app init
 const app = express();
 
-winston.add(winston.transports.File, {filename: 'errors.log'});
 
+require('./src/services/logger/logger');
 require('./src/db/db.js')();
 require('./src/middleware/globalMiddleware')(app);
 require('./src/routes/routes')(app);
