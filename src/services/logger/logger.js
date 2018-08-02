@@ -6,6 +6,6 @@ process.on('unhandledRejection', (ex) => {
 
 winston.add(winston.transports.File, {
     filename: 'errors.log',
-    handleExceptions: true,
+    handleExceptions: false, //switch to true in prod
     humanReadableUnhandledException: true
 });

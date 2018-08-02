@@ -8,7 +8,7 @@ module.exports  = {
         return (req, res, next) => {
             const result = Joi.validate(req.body, schema);
             if(result.error){
-                throw new Error(result.error);
+                res.status(422).json({error: result.error});
             }
             if(!req.value) {
                 req.value = {};
@@ -23,7 +23,7 @@ module.exports  = {
             const user = await User.findById(decodeJWT(token).sub);
             const result = Joi.validate(user.status, schema);
             if(result.error){
-                throw new Error("Korisnik nije potvrdjen!");
+                res.status(422).json({ error: "Korisnik nije potvrdjen!" });
             }
             if(!req.value) {
                 req.value = {};

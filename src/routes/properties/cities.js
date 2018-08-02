@@ -16,11 +16,11 @@ router.route('/edit/:id')
 
 // Show city
 router.route('/show/:id')
-    .put(passportJWT, confirmUser(schemas.confirmedSchema), CityController.show); 
+    .get(passportJWT, confirmUser(schemas.confirmedSchema), CityController.show); 
 
 // All city
 router.route('/all')
-    .put(passportJWT, confirmUser(schemas.confirmedSchema), CityController.all); 
+    .get(passportJWT, confirmUser(schemas.confirmedSchema), CityController.all); 
 
 // Delete city
 router.route('/delete/:id')

@@ -14,7 +14,7 @@ module.exports = {
         const foundUser = await User.findOne({ "local.email" : email });
         // If it is throw new error
         if(foundUser) {
-            throw new Error( "Email je vec u upotrebi" );
+            req.status(422).json({ error :"Email je vec u upotrebi" });
         }
         // If not build email token
         const emailToken = await verify_token();
@@ -93,7 +93,7 @@ module.exports = {
                 }
             )
         }else{
-            throw new Error("Token nije isti !");
+            req.status(422).json({ error :"Token nije isti !" });
         }
     },
     // Resend email with token
@@ -129,7 +129,7 @@ module.exports = {
             // Return success 
             return res.status(200).send(user);
         }else{
-            throw new Error("Korisnik nije pronadjen!");  
+            req.status(422).json({ error : "Korisnik nije pronadjen!" });  
         }   
     }
 }

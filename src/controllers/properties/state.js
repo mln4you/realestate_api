@@ -1,22 +1,41 @@
 const State = require('../../models/properties/state');
-//const mongoose = require('mongoose');
+const City = require('../../models/properties/city');
+const mongoose = require('mongoose');
 
 
 module.exports = {
     
     // Creates state
     create: async (req, res, next) => {
-        // Create new state form request object
+         // Request input elements
         const reqState  = req.body.state;
+        const cityIds = req.params.id;
+
+        // Create new state
         var state = new State({
             _id: new mongoose.Types.ObjectId(),
             name: reqState,
         });
+
+        // If cities provided then relate them to the state
+        if(Array.isArray(cityIds) || cityIds){
+            cityIds.forEach(async cityId => {
+                await state.cities.push(cityId);
+            });
+        }
           // Save state
-        state.save(function (err) {
-        if (err) return res.status(500).json({error: err.message});
-            return res.status(200).json(state);
-        })
+        state.save();
+
+        if(Array.isArray(cityIds) || cityIds){
+            // Update city block with city relation
+            cityIds.forEach(async cityId => {
+                const updatedCity = await City.findById(cityId);
+                updatedCity.state = state.id
+                await updatedCity.save();
+            });
+        }
+        // return success
+        return res.status(200).send(state);
     },
     
     
