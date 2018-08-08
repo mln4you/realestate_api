@@ -9,7 +9,7 @@ module.exports = {
     create: async (req, res, next) => {
          // Request input elements
         const reqState  = req.body.state;
-        const cityIds = req.params.id;
+        const cityIds = req.body.cities;
 
         // Create new state
         var state = new State({
@@ -40,65 +40,59 @@ module.exports = {
     
     
     // updates state
-    update: (req, res, next) => {
+    update: async (req, res, next) => {
+        
+        // Request input elements
         const newState = req.body.state;
         const stateId = req.params.id;
-        State.findByIdAndUpdate(stateId, { $set: { name: newState } }, { new: true, runValidators :true}, (err, state) => {
-            if(err){
-                console.log(err);
-                return res.status(500).json({error: err.message});
-            }
-            return res.status(200).json(state);
-        });
+        const cityIds = req.body.cities;
+
+        // Find state and update
+        state = await State.findById(stateId);
+        state.name = newState;
+        state.cities = [];
+
+        // If cities provided then relate them to state
+        if(Array.isArray(cityIds) || cityIds){
+            cityIds.forEach(async cityId => {
+                await state.cities.push(cityIds);
+            });
+        }
+        await state.save();
+        // If city provided then update them
+        if(Array.isArray(cityIds) || cityIds){
+            // update city with state relation
+            cityIds.forEach(async cityId => {
+                const updatedCity = await City.findById(cityId);
+                updatedCity.state = state.id
+                await updatedCity.save();
+            });
+        }
+        return res.status(200).json(state);
     },
     
 
     // Show state
-    show: async (req, res, next) => {
-        
+   show: async (req, res, next) => {
         const stateId = req.params.id;
-        
-        State.findById(stateId, (err, state) => {
-            if(err){
-                return res.status(500).json({error: err.message});
-            }else{
-                return res.status(200).json(state);
-            }
+        State.findById(stateId).
+            populate('cities').exec(function (err, state) {
+            return res.status(200).json(state);
         });
-    
     },
-    
 
-    // Show all states
+        // Show all states
     all: async (req, res, next) => {
-        
-        State.find({}, function(err, states) {
-            /* var cityBlockMap = {};
-        
-            cityBlocks.forEach(function(cityBlock) {
-                cityBlockMap[cityBlock._id] = cityBlock;
-            }); */
-        
+        State.find({}).populate('cities').exec(function(err, states){
             res.send(states);  
-          });
+        });
     },
     
-    
-    // consider pre remove middleware!!
-    delete : async (req, res, next) => {
-        
+   // Delete city by its id
+   delete : async (req, res, next) => {
         const stateId = req.params.id;
         const state = await State.findById(stateId);
-        
-        if(!Array.isArray(state.cities) || !state.cities){
-            await State.findByIdAndRemove(stateId, (err, state) => {
-                if(err){
-                    return res.status(500).json(err.message);
-                }
-                return res.status(200).json(state);
-            });
-        }else{
-            return res.status(500).json({error: "Cannot delete this state, there are properties associated with it"});
-        } 
+        state.remove();
+        res.status(200).send(state);
     }
 }

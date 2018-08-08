@@ -58,12 +58,11 @@ const PropertySchema = Schema({
         type: Boolean
     },
     heating_type : { type: Schema.Types.ObjectId, ref: 'HeatingType' },
-    features :  [ {type : Schema.Types.ObjectId, ref : 'Feature'} ],
     user : { type: Schema.Types.ObjectId, ref: 'User' },
     favorite: { type: Schema.Types.ObjectId, ref: 'User' },
     pictures: [ {type : Schema.Types.ObjectId, ref : 'Picture'} ],
     videos: [ {type : Schema.Types.ObjectId, ref : 'Video'} ],
-},
+    },
 {
     timestamps: true
 });

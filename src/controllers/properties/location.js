@@ -1,85 +1,98 @@
 const Location = require('../../models/properties/location');
-//const mongoose = require('mongoose');
+const State = require('../../models/properties/state');
+const mongoose = require('mongoose');
 
 
 module.exports = {
     
-    // Creates location
+        // Creates location
     create: async (req, res, next) => {
-        // Create new location form request object
+         // Request input elements
         const reqLocation  = req.body.location;
+        const stateIds = req.body.states;
+
+        // Create new location
         var location = new Location({
             _id: new mongoose.Types.ObjectId(),
             name: reqLocation,
         });
+        
+        // If states provided then relate them to the location
+        if(Array.isArray(stateIds) || stateIds){
+            stateIds.forEach(async stateId => {
+                await location.states.push(stateId);
+            });
+        }
           // Save location
-        location.save(function (err) {
-        if (err) return res.status(500).json({error: err.message});
-            return res.status(200).json(location);
-        })
+        location.save();
+
+        if(Array.isArray(stateIds) || stateIds){
+            // Update location with city state
+            stateIds.forEach(async stateId => {
+                const updatedState = await State.findById(stateId);
+                updatedState.location = location.id
+                await updatedState.save();
+            });
+        }
+        // return success
+        return res.status(200).send(location);
     },
     
     
     // updates location
-    update: (req, res, next) => {
+    update: async (req, res, next) => {
+        
+        // Request input elements
         const newLocation = req.body.location;
         const locationId = req.params.id;
-        Location.findByIdAndUpdate(locationId, { $set: { name: newLocation } }, { new: true, runValidators :true}, (err, location) => {
-            if(err){
-                console.log(err);
-                return res.status(500).json({error: err.message});
-            }
-            return res.status(200).json(location);
-        });
+        const stateIds = req.body.states;
+
+        // Find location and update
+        location = await Location.findById(locationId);
+        location.name = newLocation;
+        location.states = [];
+
+        // If states provided then relate them to location
+        if(Array.isArray(stateIds) || stateIds){
+            stateIds.forEach(async stateId => {
+                await location.states.push(stateId);
+            });
+        }
+        await state.save();
+        // If state provided then update them
+        if(Array.isArray(stateIds) || stateIds){
+            // update state with location relation
+            stateIds.forEach(async stateId => {
+                const state = await State.findById(stateId);
+                state.location = location.id
+                await state.save();
+            });
+        }
+        return res.status(200).json(location);
     },
     
 
     // Show location
-    show: async (req, res, next) => {
-        
+   show: async (req, res, next) => {
         const locationId = req.params.id;
-        
-        Location.findById(locationId, (err, location) => {
-            if(err){
-                return res.status(500).json({error: err.message});
-            }else{
-                return res.status(200).json(location);
-            }
+        Location.findById(locationId).
+            populate('states').exec(function (err, location) {
+            return res.status(200).json(location);
         });
-    
     },
-    
 
-    // Show all locations
+        // Show all locations
     all: async (req, res, next) => {
-        
-        Location.find({}, function(err, locations) {
-            /* var cityBlockMap = {};
-        
-            cityBlocks.forEach(function(cityBlock) {
-                cityBlockMap[cityBlock._id] = cityBlock;
-            }); */
-        
+        Location.find({}).populate('states').exec(function(err, locations){
             res.send(locations);  
-          });
+        });
     },
     
-    
-    // consider pre remove middleware!!
-    delete : async (req, res, next) => {
-        
+   // Delete location by its id
+   delete : async (req, res, next) => {
         const locationId = req.params.id;
         const location = await Location.findById(locationId);
-        
-        if(!Array.isArray(location.states) || !location.states){
-            await Location.findByIdAndRemove(locationId, (err, location) => {
-                if(err){
-                    return res.status(500).json(err.message);
-                }
-                return res.status(200).json(location);
-            });
-        }else{
-            return res.status(500).json({error: "Cannot delete this location, there are properties associated with it"});
-        } 
+        location.remove();
+        res.status(200).send(location);
     }
 }

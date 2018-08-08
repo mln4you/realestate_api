@@ -16,11 +16,11 @@ router.route('/edit/:id')
 
 // Show heating type 
 router.route('/show/:id')
-    .put(passportJWT, confirmUser(schemas.confirmedSchema), HeatingTypeController.show); 
+    .get(passportJWT, confirmUser(schemas.confirmedSchema), HeatingTypeController.show); 
 
 // All heating type 
 router.route('/all')
-    .put(passportJWT, confirmUser(schemas.confirmedSchema), HeatingTypeController.all); 
+    .get(passportJWT, confirmUser(schemas.confirmedSchema), HeatingTypeController.all); 
 
 // Delete heating type
 router.route('/delete/:id')

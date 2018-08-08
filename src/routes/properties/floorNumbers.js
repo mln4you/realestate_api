@@ -16,11 +16,11 @@ router.route('/edit/:id')
 
 // Show floor number 
 router.route('/show/:id')
-    .put(passportJWT, confirmUser(schemas.confirmedSchema), FloorNumberController.show); 
+    .get(passportJWT, confirmUser(schemas.confirmedSchema), FloorNumberController.show); 
 
 // All floor number 
 router.route('/all')
-    .put(passportJWT, confirmUser(schemas.confirmedSchema), FloorNumberController.all); 
+    .get(passportJWT, confirmUser(schemas.confirmedSchema), FloorNumberController.all); 
 
 // Delete floor number
 router.route('/delete/:id')

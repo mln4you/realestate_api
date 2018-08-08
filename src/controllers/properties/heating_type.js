@@ -1,5 +1,5 @@
 const HeatingType = require('../../models/properties/heating_type');
-//const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 
 module.exports = {
@@ -68,15 +68,8 @@ module.exports = {
         const heatingTypeId = req.params.id;
         const heatingType = await HeatingType.findById(heatingTypeId);
         
-        if(!Array.isArray(heatingTypeId.properties) || !heatingTypeId.properties.length){
-            await HeatingType.findByIdAndRemove(heatingTypeId, (err, heatingType) => {
-                if(err){
-                    return res.status(500).json(err.message);
-                }
-                return res.status(200).json(heatingType);
-            });
-        }else{
-            return res.status(500).json({error: "Cannot delete this heating type, there are properties associated with it"});
-        } 
+        await heatingType.remove();
+        
+        return res.status(200).json(heatingType);
     }
 }
