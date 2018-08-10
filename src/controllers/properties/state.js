@@ -76,7 +76,13 @@ module.exports = {
    show: async (req, res, next) => {
         const stateId = req.params.id;
         State.findById(stateId).
-            populate('cities').exec(function (err, state) {
+            populate({ 
+                path: 'cities',
+                populate: {
+                  path: 'city_blocks',
+                  model: 'CityBlock'
+                } 
+             }).exec(function (err, state) {
             return res.status(200).json(state);
         });
     },

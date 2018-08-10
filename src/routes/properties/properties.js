@@ -2,13 +2,14 @@ const express = require('express');
 const router = require('express-promise-router')();
 const PropertyController = require('../../controllers/properties/properties');
 const {  validateBody, confirmUser, schemas } = require('../../middleware/validateMiddleware');
+const delegateProperty = require('../../middleware/delegatePropertyData')();
 const passport = require('passport');
 const passportConf = require('../../services/passport/passport');
 const passportJWT = passport.authenticate('jwt', { session: false });
 
 // Create new property 
 router.route('/create')
-    .post(passportJWT, confirmUser(schemas.confirmedSchema), PropertyController.create); 
+    .post(passportJWT, confirmUser(schemas.confirmedSchema), delegateProperty, PropertyController.create); 
 
 // Update property
 router.route('/edit/:id')
@@ -16,11 +17,11 @@ router.route('/edit/:id')
 
 // Show property
 router.route('/show/:id')
-    .put(passportJWT, confirmUser(schemas.confirmedSchema), PropertyController.show); 
+    .get(passportJWT, confirmUser(schemas.confirmedSchema), PropertyController.show); 
 
 // All properties
 router.route('/all')
-    .put(passportJWT, confirmUser(schemas.confirmedSchema), PropertyController.all); 
+    .get(passportJWT, confirmUser(schemas.confirmedSchema), PropertyController.all); 
 
 // Delete property
 router.route('/delete/:id')

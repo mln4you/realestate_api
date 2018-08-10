@@ -8,7 +8,7 @@ const StateSchema = Schema({
     name: {
         type: String
     },
-    location :   {type : Schema.Types.ObjectId, ref : 'Location'} ,
+    property :   {type : Schema.Types.ObjectId, ref : 'Property'} ,
     cities: [{ type: Schema.Types.ObjectId, ref: 'City' }],
 });
 const State = mongoose.model("State", StateSchema)

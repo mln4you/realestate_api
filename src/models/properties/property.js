@@ -32,7 +32,7 @@ const PropertySchema = Schema({
         type : String,
         required : false
     },
-    location: { type: Schema.Types.ObjectId, ref: 'Location' },
+    location: { type: Schema.Types.ObjectId, ref: 'State' },
     latitude: {
         type : Number
     },
@@ -57,6 +57,7 @@ const PropertySchema = Schema({
     bussiness: {
         type: Boolean
     },
+    amenities: [ {type : Schema.Types.ObjectId, ref : 'Amenity'} ],
     heating_type : { type: Schema.Types.ObjectId, ref: 'HeatingType' },
     user : { type: Schema.Types.ObjectId, ref: 'User' },
     favorite: { type: Schema.Types.ObjectId, ref: 'User' },
